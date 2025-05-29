@@ -1,3 +1,12 @@
+// konversi ke rupiah
+const rupiah = ( number ) => {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        // minimumFractionDigits: 0,
+    }).format(number);
+};
+
 document.addEventListener('alpine:init', () => {
         Alpine.data('products', () => ({
             
@@ -89,14 +98,31 @@ form.addEventListener('keyup', function() {
     checkoutButton.classList.remove('disabled');
 });
 
+
 // kirirm data ketika tombol checkout di click
-checkoutButton.addEventListener('click', function(e) {
+checkoutButton.addEventListener('click', async function(e) {
     e.preventDefault();
     const formData = new FormData(form);
     const data = new URLSearchParams(formData);
     const objData = Object.fromEntries(data);
-    const message = formatMessage(objData);
-    window.open('http://wa.me/6285800545096?text=' + encodeURIComponent(message));
+    // const message = formatMessage(objData);
+    // window.open('http://wa.me/6285800545096?text=' + encodeURIComponent(message));
+
+    // minta transection token menggunakan ajax / fetch
+    try {
+
+        const response = await fetch('php/placeOrder.php', {
+            method: 'POST',
+            body: data,
+        });
+        const token = await response.text();
+        // console.log(token)
+        window.snap.pay(token);
+
+    } catch (err) {
+        console.log(err.message)
+    }
+
 });
 
 // format pesan whatsapp
@@ -111,12 +137,3 @@ const formatMessage = (obj) => {
     Terma kasih.
     `
 }
-
-// konversi ke rupiah
-const rupiah = ( number ) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        // minimumFractionDigits: 0,
-    }).format(number);
-};
